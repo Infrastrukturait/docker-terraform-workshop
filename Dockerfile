@@ -30,7 +30,7 @@ RUN set -eux \
     && unzip ./terraform.zip \
     && rm -f ./terraform.zip \
     && chmod +x ./terraform \
-    && mv ./terraform /usr/bin/terraform
+    && mv ./terraform /usr/local/bin/terraform
 
 # Get Terragrunt
 ARG TG_VERSION=${TG_VERSION:-default}
@@ -52,24 +52,95 @@ RUN set -eux \
     ; fi \
     && curl -sS -L \
         https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_${ARCH} \
-        -o /usr/bin/terragrunt \
-    && chmod +x /usr/bin/terragrunt
+        -o /usr/local/bin/terragrunt \
+    && chmod +x /usr/local/bin/terragrunt
+
+# Get Terraform docs
+ENV TFDOCS_VERSION=0.16.0
+RUN set -eux \
+    && case "$(uname -s)" in \
+            Darwin) ARCH="darwin" ;; \
+            Linux)  ARCH="linux"  ;; \
+            CYGWIN*|MINGW32*|MSYS*|MINGW*) ARCH="windows" ;; \
+            *) ARCH="unknown" ;; \
+        esac \
+    && case "$(uname -m)" in \
+            x86_64) ARCH="${ARCH}-amd64" ;; \
+            arm64|aarch64)  ARCH="${ARCH}-arm64" ;; \
+            *)      ARCH="${ARCH}-unknown" ;; \
+    esac \
+    && curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v${TFDOCS_VERSION}/terraform-docs-v${TFDOCS_VERSION}-${ARCH}.tar.gz \
+    && tar -xzf terraform-docs.tar.gz \
+    && chmod +x terraform-docs \
+    && mv terraform-docs /usr/local/bin/terraform-docs \
+    ;
+
+# Get Terraform docs
+ENV INFRACOST_VERSION=0.10.15
+RUN set -eux \
+    && case "$(uname -s)" in \
+            Darwin) ARCH="darwin" ;; \
+            Linux)  ARCH="linux"  ;; \
+            CYGWIN*|MINGW32*|MSYS*|MINGW*) ARCH="windows" ;; \
+            *) ARCH="unknown" ;; \
+        esac \
+    && case "$(uname -m)" in \
+            x86_64) ARCH="${ARCH}-amd64" ;; \
+            arm64|aarch64)  ARCH="${ARCH}-arm64" ;; \
+            *)      ARCH="${ARCH}-unknown" ;; \
+    esac \
+    && curl -Lo ./infracost.tar.gz https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-${ARCH}.tar.gz  \
+    && tar -xzf infracost.tar.gz \
+    && chmod +x infracost-${ARCH} \
+    && mv infracost-${ARCH} /usr/local/bin/infracost \
+    ;
 
 # Test binaries
 RUN set -eux \
     && terraform --version \
-    && terragrunt --version
+    && terragrunt --version \
+    && terraform-docs --version \
+    && infracost --version
 
 
-FROM bash:5.2
+FROM docker.io/bash:5
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
 SHELL ["/usr/local/bin/bash", "-euxo", "pipefail", "-c"]
 RUN set -eux \
     && apk --no-cache update \
     && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl \
     && pip --no-cache-dir install awscli \
-    && rm -rf /var/cache/apk/*
-COPY --from=builder /usr/bin/terraform /usr/bin/terraform
-COPY --from=builder /usr/bin/terragrunt /usr/bin/terragrunt
+    && rm -rf /var/cache/apk/* \
+    ;
 
-CMD ["/usr/local/bin/bash"]
+ARG TFENV_VERSION=3.0.0
+ENV TFENV_ROOT /usr/local/lib/tfenv
+ENV TFENV_CONFIG_DIR /var/tfenv
+
+VOLUME /var/tfenv
+
+RUN set -eux \
+    && TFENV_TERRAFORM_VERSION="$(curl -sS -L \
+            https://infrastrukturait.github.io/internal-terraform-version/terraform-version)" \
+    && wget -O /tmp/tfenv.tar.gz "https://github.com/tfutils/tfenv/archive/refs/tags/v${TFENV_VERSION}.tar.gz" \
+    && tar -C /tmp -xf /tmp/tfenv.tar.gz \
+    && mv "/tmp/tfenv-${TFENV_VERSION}/bin"/* /usr/local/bin/ \
+    && mkdir -p /usr/local/lib/tfenv \
+    && mv "/tmp/tfenv-${TFENV_VERSION}/lib" /usr/local/lib/tfenv/ \
+    && mv "/tmp/tfenv-${TFENV_VERSION}/libexec" /usr/local/lib/tfenv/ \
+    && mkdir -p /usr/local/share/licenses \
+    && mv "/tmp/tfenv-${TFENV_VERSION}/LICENSE" /usr/local/share/licenses/tfenv \
+    && rm -rf /tmp/tfenv* \
+    && case "$(uname -m)" in \
+            x86_64) TFENV_ARCH=amd64 ;; \
+            arm64|aarch64)  TFENV_ARCH=arm64 ;; \
+            *)    TFENV_ARCH=unknown ;; \
+    esac \
+    && tfenv install $TFENV_TERRAFORM_VERSION \
+    && tfenv use $TFENV_TERRAFORM_VERSION \
+    ;
+
+
+COPY --from=builder /usr/local/bin/terragrunt /usr/local/bin/terragrunt
+COPY --from=builder /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
+COPY --from=builder /usr/local/bin/infracost /usr/local/bin/infracost
