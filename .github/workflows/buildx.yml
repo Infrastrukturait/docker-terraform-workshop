@@ -27,7 +27,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Build and push
+        name: Build zsh image and push
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -35,4 +35,15 @@ jobs:
           push: true
           tags: infrastrukturait/terraform-workshop:latest
           cache-from: type=registry,ref=infrastrukturait/terraform-workshop:latest
+          cache-to: type=inline
+
+      -
+        name: Build zsh image and push
+        uses: docker/build-push-action@v3
+        with:
+          context: ./bash
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: infrastrukturait/terraform-workshop:bash
+          cache-from: type=registry,ref=infrastrukturait/terraform-workshop:bash
           cache-to: type=inline

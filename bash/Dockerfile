@@ -1,4 +1,4 @@
-FROM alpine:3:16 as builder
+FROM alpine:3.16 as builder
 
 # Install build dependencies
 RUN set -eux \
@@ -103,14 +103,9 @@ RUN set -eux \
     && infracost --version
 
 
-FROM docker.io/alpine:alpine:3.16
+FROM docker.io/bash:5
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
-    -p git -p ssh-agent -p 'history-substring-search' \
-    -a 'bindkey "\$terminfo[kcuu1]" history-substring-search-up' \
-    -a 'bindkey "\$terminfo[kcud1]" history-substring-search-down'
-
-SHELL ["/bin/zsh", "-l"]
+SHELL ["/usr/local/bin/bash", "-euxo", "pipefail", "-c"]
 RUN set -eux \
     && apk --no-cache update \
     && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl gomplate \
