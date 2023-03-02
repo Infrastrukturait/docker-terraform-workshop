@@ -103,7 +103,7 @@ RUN set -eux \
     && infracost --version
 
 
-FROM docker.io/alpine:alpine:3.16
+FROM alpine:3.16
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
     -p git -p ssh-agent -p 'history-substring-search' \

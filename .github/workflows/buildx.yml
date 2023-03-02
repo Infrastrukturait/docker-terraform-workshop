@@ -38,7 +38,7 @@ jobs:
           cache-to: type=inline
 
       -
-        name: Build zsh image and push
+        name: Build bash image and push
         uses: docker/build-push-action@v3
         with:
           context: ./bash
