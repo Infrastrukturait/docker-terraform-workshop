@@ -112,7 +112,7 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 
 RUN set -eux \
     && apk --no-cache update \
-    && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl gomplate \
+    && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl gomplate openssh-client \
     && pip --no-cache-dir install awscli terraform-local \
     && echo -e '#!/usr/bin/env bash\n/usr/bin/curl -s -L https://raw.githubusercontent.com/Infrastrukturait/READMEgen/main/README.md.template |\\\n\t/usr/bin/gomplate -d config=./README.json > ./README.md' > /usr/local/bin/readmegen \
     && echo -e '#!/usr/bin/env bash\n/usr/bin/aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} "$@"' > /usr/local/bin/aws \
@@ -127,6 +127,7 @@ ENV TFENV_CONFIG_DIR /var/tfenv
 VOLUME /var/tfenv
 
 RUN set -eux \
+    && ln -f /bin/zsh /bin/sh \
     && TFENV_TERRAFORM_VERSION="$(curl -sS -L \
             https://infrastrukturait.github.io/internal-terraform-version/terraform-version)" \
     && wget -O /tmp/tfenv.tar.gz "https://github.com/tfutils/tfenv/archive/refs/tags/v${TFENV_VERSION}.tar.gz" \
@@ -151,3 +152,5 @@ RUN set -eux \
 COPY --from=builder /usr/local/bin/terragrunt /usr/local/bin/terragrunt
 COPY --from=builder /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=builder /usr/local/bin/infracost /usr/local/bin/infracost
+
+ENTRYPOINT ["zsh"]
