@@ -103,10 +103,11 @@ RUN set -eux \
     && infracost --version
 
 
-FROM alpine:3.16
+FROM docker.io/bash:5
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
+SHELL ["/usr/local/bin/bash", "-euxo", "pipefail", "-c"]
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
-    -p git -p ssh-agent -p aws -p 'history-substring-search' \
+    -p git -p aws -p 'history-substring-search' \
     -a 'bindkey "\$terminfo[kcuu1]" history-substring-search-up' \
     -a 'bindkey "\$terminfo[kcud1]" history-substring-search-down'
 
@@ -114,8 +115,8 @@ RUN set -eux \
     && apk --no-cache update \
     && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl gomplate openssh-client \
     && pip --no-cache-dir install awscli terraform-local \
-    && echo -e '#!/usr/bin/env bash\n/usr/bin/curl -s -L https://raw.githubusercontent.com/Infrastrukturait/READMEgen/main/README.md.template |\\\n\t/usr/bin/gomplate -d config=./README.json > ./README.md' > /usr/local/bin/readmegen \
-    && echo -e '#!/usr/bin/env bash\n/usr/bin/aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} "$@"' > /usr/local/bin/aws \
+    && echo -e '/usr/bin/curl -s -L https://raw.githubusercontent.com/Infrastrukturait/READMEgen/main/README.md.template |\\\n\t/usr/bin/gomplate -d config=./README.json > ./README.md' > /usr/local/bin/readmegen \
+    && echo -e '/usr/bin/aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} "$@"' > /usr/local/bin/aws \
     && chmod +x /usr/local/bin/readmegen /usr/local/bin/aws \
     && rm -rf /var/cache/apk/* \
     ;
