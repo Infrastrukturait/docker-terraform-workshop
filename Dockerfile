@@ -106,7 +106,9 @@ RUN set -eux \
 FROM docker.io/bash:5
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
 SHELL ["/usr/local/bin/bash", "-euxo", "pipefail", "-c"]
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
+RUN set -eux \
+    && ZSH_IN_DOCKER_VERSION="$(curl -s https://api.github.com/repos/deluan/zsh-in-docker/releases/latest | grep tag_name | grep -o -E -m 1 "[0-9.]+")" \
+    && bash -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
     -p git -p aws -p 'history-substring-search' \
     -a 'bindkey "\$terminfo[kcuu1]" history-substring-search-up' \
     -a 'bindkey "\$terminfo[kcud1]" history-substring-search-down'
