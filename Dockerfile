@@ -105,14 +105,7 @@ RUN set -eux \
 
 FROM docker.io/bash:5
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
-SHELL ["/usr/local/bin/bash", "-euxo", "pipefail", "-c"]
-RUN set -eux \
-    && ZSH_IN_DOCKER_VERSION="$(curl -s https://api.github.com/repos/deluan/zsh-in-docker/releases/latest | grep tag_name | grep -o -E -m 1 "[0-9.]+")" \
-    && bash -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
-    -p git -p aws -p 'history-substring-search' \
-    -a 'bindkey "\$terminfo[kcuu1]" history-substring-search-up' \
-    -a 'bindkey "\$terminfo[kcud1]" history-substring-search-down'
-
+SHELL ["/usr/local/bin/bash", "-c"]
 RUN set -eux \
     && apk --no-cache update \
     && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl gomplate openssh-client \
@@ -122,6 +115,13 @@ RUN set -eux \
     && chmod +x /usr/local/bin/readmegen /usr/local/bin/aws \
     && rm -rf /var/cache/apk/* \
     ;
+
+RUN set -eux \
+    && ZSH_IN_DOCKER_VERSION="$(curl -s https://api.github.com/repos/deluan/zsh-in-docker/releases/latest | jq -r .tag_name)" \
+    && bash -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
+    -p git -p aws -p 'history-substring-search' \
+    -a 'bindkey "\$terminfo[kcuu1]" history-substring-search-up' \
+    -a 'bindkey "\$terminfo[kcud1]" history-substring-search-down'
 
 ARG TFENV_VERSION=3.0.0
 ENV TFENV_ROOT /usr/local/lib/tfenv

@@ -105,7 +105,7 @@ RUN set -eux \
 
 FROM docker.io/bash:5
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
-SHELL ["/usr/local/bin/bash", "-euxo", "pipefail", "-c"]
+SHELL ["/usr/local/bin/bash", "-c"]
 RUN set -eux \
     && apk --no-cache update \
     && apk --no-cache add python3 py-pip py-setuptools ca-certificates groff less bash git jq file curl gomplate openssh-client \
