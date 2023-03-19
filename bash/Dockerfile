@@ -33,7 +33,7 @@ RUN set -eux \
     && mv ./terraform /usr/local/bin/terraform
 
 # Get Terragrunt
-ARG TG_VERSION
+ARG TG_VERSION=${TG_VERSION:-default}
 RUN set -eux \
     && case "$(uname -s)" in \
             Darwin) ARCH="darwin" ;; \
