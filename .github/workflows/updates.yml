@@ -3,6 +3,9 @@ name: update-tools
 on:
   schedule:
     - cron: "0 0 * * 0"
+  push:
+    branches:
+      - "main"
 
 jobs:
   update-tools:
@@ -54,6 +57,7 @@ jobs:
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
       - name: update versions.json
+        shell: bash
         id: update
         run: |
           cp versions.json versions.json.tmp
@@ -62,6 +66,7 @@ jobs:
           jq '.tfenv.version = "${{ steps.tfenv_version.outputs.version }}"' versions.json > versions.json.tmp
           rm -f versions.json
           mv versions.json.tmp versions.json
+          cat versions.json
           if git diff --no-patch --exit-code versions.json; then
             echo "No changes detected!"
             echo "create_commit=false" >> $GITHUB_OUTPUT
