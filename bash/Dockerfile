@@ -56,7 +56,7 @@ RUN set -eux \
     && chmod +x /usr/local/bin/terragrunt
 
 # Get Terraform docs
-ENV TFDOCS_VERSION=0.16.0
+ARG TFDOCS_VERSION=${TFDOCS_VERSION}
 RUN set -eux \
     && case "$(uname -s)" in \
             Darwin) ARCH="darwin" ;; \
@@ -76,7 +76,7 @@ RUN set -eux \
     ;
 
 # Get Terraform docs
-ENV INFRACOST_VERSION=0.10.15
+ARG INFRACOST_VERSION=${INFRACOST_VERSION}
 RUN set -eux \
     && case "$(uname -s)" in \
             Darwin) ARCH="darwin" ;; \
@@ -116,7 +116,7 @@ RUN set -eux \
     && rm -rf /var/cache/apk/* \
     ;
 
-ARG TFENV_VERSION=3.0.0
+ARG TFENV_VERSION=${TFENV_VERSION}
 ENV TFENV_ROOT /usr/local/lib/tfenv
 ENV TFENV_CONFIG_DIR /var/tfenv
 
