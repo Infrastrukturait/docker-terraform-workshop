@@ -1,0 +1,84 @@
+name: update-tools
+
+on:
+  schedule:
+    - cron: "0 0 * * 7"
+  push:
+    branches:
+      - "main"
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: check latest release 'tfdocs' 
+      - id: tfdocs_latest_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: terraform-docs
+          repo: terraform-docs
+          excludes: prerelease, draft
+
+      - name: remove first 'v' from tfdocs version
+        id: tfdocs_version
+        run: |
+          TAG=${{ steps.tfdocs_latest_release.outputs.release }}
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: check latest release 'infracost'
+      - id: infracost_latest_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: infracost
+          repo: infracost
+          excludes: prerelease, draft
+
+      - name: remove first 'v' from infracost version
+        id: infracost_version
+        run: |
+          TAG=${{ steps.infracost_latest_release.outputs.release }}
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: check latest release 'tfenv'
+      - id: tfenv_latest_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: tfutils
+          repo: tfenv
+          excludes: prerelease, draft
+
+      - name: remove first 'v' from tfenv version
+        id: tfenv_version
+        run: |
+          TAG=${{ steps.tfenv_latest_release.outputs.release }}
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: update versions.json
+        run: |
+          cp versions.json versions.json.tmp
+          jq '.tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"' versions.json > versions.json.tmp
+          jq '.infracost.version = "${{ steps.infracost_version.outputs.version }}"' versions.json > versions.json.tmp
+          jq '.tfenv.version = "${{ steps.tfenv_version.outputs.version }}"' versions.json > versions.json.tmp
+          rm -f versions.json
+          mv versions.json.tmp versions.json
+          if git diff --no-patch --exit-code versions.json; then
+            echo "No changes detected!"
+            echo "create_commit=false" >> $GITHUB_OUTPUT
+          else
+            echo "New version detected!"
+            echo "create_commit=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Git Auto-Commit
+        if: steps.update.outputs.create_commit == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: refactor(update-ci): Auto update version in `versions.json`
+          commit_options: '--no-verify --signoff'
+
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <actions@github.com>"
