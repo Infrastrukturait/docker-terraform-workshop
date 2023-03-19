@@ -61,12 +61,9 @@ jobs:
         id: update
         run: |
           cp versions.json versions.json.tmp
-          jq '.tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"' versions.json > versions.json.tmp
-          jq '.infracost.version = "${{ steps.infracost_version.outputs.version }}"' versions.json > versions.json.tmp
-          jq '.tfenv.version = "${{ steps.tfenv_version.outputs.version }}"' versions.json > versions.json.tmp
+          jq '.tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"|.infracost.version = "${{ steps.infracost_version.outputs.version }}"|.tfenv.version = "${{ steps.tfenv_version.outputs.version }}"' versions.json > versions.json.tmp
           rm -f versions.json
           mv versions.json.tmp versions.json
-          cat versions.json
           if git diff --no-patch --exit-code versions.json; then
             echo "No changes detected!"
             echo "create_commit=false" >> $GITHUB_OUTPUT
