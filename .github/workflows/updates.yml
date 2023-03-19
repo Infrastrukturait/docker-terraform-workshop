@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: check latest release 'tfdocs'
-      - id: tfdocs_latest_release
+        id: tfdocs_latest_release
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           owner: terraform-docs
@@ -29,7 +29,7 @@ jobs:
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
       - name: check latest release 'infracost'
-      - id: infracost_latest_release
+        id: infracost_latest_release
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           owner: infracost
@@ -43,7 +43,7 @@ jobs:
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
       - name: check latest release 'tfenv'
-      - id: tfenv_latest_release
+        id: tfenv_latest_release
         uses: pozetroninc/github-action-get-latest-release@master
         with:
           owner: tfutils
@@ -57,6 +57,7 @@ jobs:
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
       - name: update versions.json
+        id: update
         run: |
           cp versions.json versions.json.tmp
           jq '.tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"' versions.json > versions.json.tmp
