@@ -40,7 +40,7 @@ jobs:
           build-args: |
             TFDOCS_VERSION=${{ env.versions_tfdocs_version }}
             INFRACOST_VERSION=${{ env.versions_infracost_version }}
-            TFENV_VERSION=${{ env.versions_tfenv_version }}"
+            TFENV_VERSION=${{ env.versions_tfenv_version }}
           push: true
           tags: infrastrukturait/terraform-workshop:latest
           cache-from: type=registry,ref=infrastrukturait/terraform-workshop:latest
