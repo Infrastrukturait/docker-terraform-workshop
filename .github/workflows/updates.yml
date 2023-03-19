@@ -2,7 +2,7 @@ name: update-tools
 
 on:
   schedule:
-    - cron: "0 0 * * 7"
+    - cron: "0 0 * * 0"
   push:
     branches:
       - "main"
