@@ -7,31 +7,6 @@ RUN set -eux \
         git \
         unzip
 
-# Get Terraform
-ARG TF_VERSION=${TF_VERSION:-default}
-RUN set -eux \
-    && case "$(uname -s)" in \
-            Darwin) ARCH="darwin" ;; \
-            Linux)  ARCH="linux"  ;; \
-            CYGWIN*|MINGW32*|MSYS*|MINGW*) ARCH="windows" ;; \
-            *) ARCH="unknown" ;; \
-        esac \
-    && case "$(uname -m)" in \
-            x86_64) ARCH="${ARCH}_amd64" ;; \
-            arm64|aarch64)  ARCH="${ARCH}_arm64" ;; \
-            *)    ARCH="${ARCH}_unknown" ;; \
-    esac \
-    && if [ "${TF_VERSION}" = "default" ]; then \
-        TF_VERSION="$(curl -sS -L \
-            https://infrastrukturait.github.io/internal-terraform-version/terraform-version)" \
-    ; fi \
-    && curl -sS -L \
-        https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_${ARCH}.zip -o ./terraform.zip \
-    && unzip ./terraform.zip \
-    && rm -f ./terraform.zip \
-    && chmod +x ./terraform \
-    && mv ./terraform /usr/local/bin/terraform
-
 # Get Terragrunt
 ARG TG_VERSION=${TG_VERSION:-default}
 RUN set -eux \
@@ -56,14 +31,14 @@ RUN set -eux \
     && chmod +x /usr/local/bin/terragrunt
 
 # Get Terraform docs
-ARG TFDOCS_VERSION
+ARG TFDOCS_VERSION=${TFDOCS_VERSION:-latest}
 RUN set -eux \
     && case "$(uname -s)" in \
             Darwin) ARCH="darwin" ;; \
             Linux)  ARCH="linux"  ;; \
             CYGWIN*|MINGW32*|MSYS*|MINGW*) ARCH="windows" ;; \
             *) ARCH="unknown" ;; \
-        esac \
+    esac \
     && case "$(uname -m)" in \
             x86_64) ARCH="${ARCH}-amd64" ;; \
             arm64|aarch64)  ARCH="${ARCH}-arm64" ;; \
@@ -76,14 +51,14 @@ RUN set -eux \
     ;
 
 # Get Terraform docs
-ARG INFRACOST_VERSION
+ARG INFRACOST_VERSION=${TFDOCS_VERSION:-latest}
 RUN set -eux \
     && case "$(uname -s)" in \
             Darwin) ARCH="darwin" ;; \
             Linux)  ARCH="linux"  ;; \
             CYGWIN*|MINGW32*|MSYS*|MINGW*) ARCH="windows" ;; \
             *) ARCH="unknown" ;; \
-        esac \
+    esac \
     && case "$(uname -m)" in \
             x86_64) ARCH="${ARCH}-amd64" ;; \
             arm64|aarch64)  ARCH="${ARCH}-arm64" ;; \
@@ -97,7 +72,6 @@ RUN set -eux \
 
 # Test binaries
 RUN set -eux \
-    && terraform --version \
     && terragrunt --version \
     && terraform-docs --version \
     && infracost --version
@@ -116,17 +90,20 @@ RUN set -eux \
     && rm -rf /var/cache/apk/* \
     ;
 
-ARG TFENV_VERSION
+ARG TF_VERSION=${TF_VERSION:-latest}
+ARG TFENV_VERSION=${TFENV_VERSION:-latest}
+
 ENV TFENV_ROOT /usr/local/lib/tfenv
 ENV TFENV_CONFIG_DIR /var/tfenv
+ENV TFENV_TERRAFORM_VERSION $TF_VERSION
+
+ENV TFENV_AUTO_INSTALL true
 
 VOLUME /var/tfenv
 
 RUN set -eux \
     && ln -f /usr/local/bin/bash /bin/sh \
     && ln -f /usr/local/bin/bash /bin/bash \
-    && TFENV_TERRAFORM_VERSION="$(curl -sS -L \
-            https://infrastrukturait.github.io/internal-terraform-version/terraform-version)" \
     && wget -O /tmp/tfenv.tar.gz "https://github.com/tfutils/tfenv/archive/refs/tags/v${TFENV_VERSION}.tar.gz" \
     && tar -C /tmp -xf /tmp/tfenv.tar.gz \
     && mv "/tmp/tfenv-${TFENV_VERSION}/bin"/* /usr/local/bin/ \
@@ -150,4 +127,5 @@ COPY --from=builder /usr/local/bin/terragrunt /usr/local/bin/terragrunt
 COPY --from=builder /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=builder /usr/local/bin/infracost /usr/local/bin/infracost
 
-ENTRYPOINT ["/usr/local/bin/bash"]
+ENTRYPOINT ["/usr/local/bin/tfenv", "use"]
+CMD ["/usr/local/bin/bash"]

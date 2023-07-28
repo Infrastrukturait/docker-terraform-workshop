@@ -38,6 +38,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           build-args: |
+            TF_VERSION=${{ env.versions_terraform_version }}
+            TG_VERSION=${{ env.versions_terragrunt_version }}
             TFDOCS_VERSION=${{ env.versions_tfdocs_version }}
             INFRACOST_VERSION=${{ env.versions_infracost_version }}
             TFENV_VERSION=${{ env.versions_tfenv_version }}
@@ -52,6 +54,8 @@ jobs:
           context: ./bash
           platforms: linux/amd64,linux/arm64
           build-args: |
+            TF_VERSION=${{ env.versions_terraform_version }}
+            TG_VERSION=${{ env.versions_terragrunt_version }}
             TFDOCS_VERSION=${{ env.versions_tfdocs_version }}
             INFRACOST_VERSION=${{ env.versions_infracost_version }}
             TFENV_VERSION=${{ env.versions_tfenv_version }}
