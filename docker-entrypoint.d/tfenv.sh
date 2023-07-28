@@ -14,8 +14,6 @@ shopt -s dotglob
 
 if [ -f ".terraform-version" ]; then
 
-    unset TFENV_TERRAFORM_VERSION
-
     TFENV_BIN=$(which tfenv)
 
     $TFENV_BIN use

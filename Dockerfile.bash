@@ -95,7 +95,6 @@ ARG TFENV_VERSION=${TFENV_VERSION:-latest}
 
 ENV TFENV_ROOT /usr/local/lib/tfenv
 ENV TFENV_CONFIG_DIR /var/tfenv
-ENV TFENV_TERRAFORM_VERSION $TF_VERSION
 
 ENV TFENV_AUTO_INSTALL true
 
@@ -118,14 +117,16 @@ RUN set -eux \
             arm64|aarch64)  TFENV_ARCH=arm64 ;; \
             *)    TFENV_ARCH=unknown ;; \
     esac \
-    && tfenv install $TFENV_TERRAFORM_VERSION \
-    && tfenv use $TFENV_TERRAFORM_VERSION \
+    && tfenv install $TF_VERSION \
+    && tfenv use $TF_VERSION \
     ;
 
+COPY docker-entrypoint.d /docker-entrypoint.d
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 COPY --from=builder /usr/local/bin/terragrunt /usr/local/bin/terragrunt
 COPY --from=builder /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=builder /usr/local/bin/infracost /usr/local/bin/infracost
 
-ENTRYPOINT ["/usr/local/bin/tfenv", "use"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/usr/local/bin/bash"]
