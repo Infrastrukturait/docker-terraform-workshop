@@ -58,7 +58,15 @@ jobs:
         id: update
         run: |
           cp versions.json versions.json.tmp
-          jq '.tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"|.infracost.version = "${{ steps.infracost_version.outputs.version }}"|.tfenv.version = "${{ steps.tfenv_version.outputs.version }}"' versions.json > versions.json.tmp
+          export TF_VERSION=$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terraform-version)
+          export TG_VERSION=$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terragrunt-version)
+          jq '\
+                .terraform.version = "${{ TF_VERSION }}"|\
+                .terragrunt.version = "${{ TF_VERSION }}"|\
+                .tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"|\
+                .infracost.version = "${{ steps.infracost_version.outputs.version }}"|\
+                .tfenv.version = "${{ steps.tfenv_version.outputs.version }}"\
+              ' versions.json > versions.json.tmp
           rm -f versions.json
           mv versions.json.tmp versions.json
           if git diff --no-patch --exit-code versions.json; then
