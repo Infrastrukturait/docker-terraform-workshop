@@ -128,10 +128,15 @@ RUN set -eux \
     && tfenv use $TFENV_TERRAFORM_VERSION \
     ;
 
+COPY docker-entrypoint.d /docker-entrypoint.d
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 COPY --from=builder /usr/local/bin/terragrunt /usr/local/bin/terragrunt
 COPY --from=builder /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=builder /usr/local/bin/infracost /usr/local/bin/infracost
 
-ENTRYPOINT ["/usr/local/bin/tfenv", "use"]
+ENTRYPOINT ["zsh"]
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["zsh"]
+

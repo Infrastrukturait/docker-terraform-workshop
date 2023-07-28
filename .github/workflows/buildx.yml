@@ -36,6 +36,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
+          file: Dockerfile.zsh
           platforms: linux/amd64,linux/arm64
           build-args: |
             TF_VERSION=${{ env.versions_terraform_version }}
@@ -51,7 +52,8 @@ jobs:
       - name: Build bash image and push
         uses: docker/build-push-action@v3
         with:
-          context: ./bash
+          context: .
+          file: Dockerfile.bash
           platforms: linux/amd64,linux/arm64
           build-args: |
             TF_VERSION=${{ env.versions_terraform_version }}
