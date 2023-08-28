@@ -53,30 +53,18 @@ jobs:
           TAG=${{ steps.tfenv_latest_release.outputs.release }}
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
-      - name: check internal approved terraform version
-        id: terraform_version
-        run: |
-          TF_DEFAULT_VERSION=$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terraform-version)
-          echo "version=${TF_DEFAULT_VERSION}" >> $GITHUB_OUTPUT
-
-      - name: check internal approved terragrunt version
-        id: terragrunt_version
-        run: |
-          TG_DEFAULT_VERSION=$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terragrunt-version)
-          echo "version=${TG_DEFAULT_VERSION}" >> $GITHUB_OUTPUT
-          
       - name: update versions.json
         shell: bash
         id: update
         run: |
           cp versions.json versions.json.tmp
-          jq '\
-                .terraform.version = "${{ steps.terraform_version.outputs.version }}"|\
-                .terragrunt.version = "${{ steps.terragrunt_version.outputs.version }}"|\
-                .tfdocs.version = "${{ steps.tfdocs_version.outputs.version }}"|\
-                .infracost.version = "${{ steps.infracost_version.outputs.version }}"|\
-                .tfenv.version = "${{ steps.tfenv_version.outputs.version }}"\
-              ' versions.json > versions.json.tmp
+          jq \
+            --arg tfdocsVersion "${{ steps.tfdocs_version.outputs.version }}" \
+            --arg infracostVersion "${{ steps.infracost_version.outputs.version }}" \
+            --arg tfenvVersion "${{ steps.tfenv_version.outputs.version }}" \
+            --arg tfVersion "$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terraform-version)" \ 
+            --arg tgVersion "$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terragrunt-version)" \
+              '.terraform.version = "$tfVersion" | .terragrunt.version = "$tgVersion" | .tfdocs.version = "$tfdocsVersion" | .infracost.version = "$infracostVersion" | .tfenv.version = "$tfenvVersion"' versions.json > versions.json.tmp
           rm -f versions.json
           mv versions.json.tmp versions.json
           if git diff --no-patch --exit-code versions.json; then
