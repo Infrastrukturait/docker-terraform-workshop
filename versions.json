@@ -1,17 +1,17 @@
 {
   "terraform": {
-    "version": "1.3.7"
+    "version": "$tfVersion"
   },
   "terragrunt": {
-    "version": "0.44.5"
+    "version": "$tgVersion"
   },
   "tfdocs": {
-    "version": "0.16.0"
+    "version": "$tfdocsVersion"
   },
   "infracost": {
-    "version": "0.10.26"
+    "version": "$infracostVersion"
   },
   "tfenv": {
-    "version": "3.0.0"
+    "version": "$tfenvVersion"
   }
 }
