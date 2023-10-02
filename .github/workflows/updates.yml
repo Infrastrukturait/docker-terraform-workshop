@@ -65,7 +65,7 @@ jobs:
             --arg tfenvVersion "${{ steps.tfenv_version.outputs.version }}" \
             --arg tfVersion "$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terraform-version)" \
             --arg tgVersion "$(curl -sS -L https://infrastrukturait.github.io/internal-terraform-version/terragrunt-version)" \
-              '.terraform.version = "$tfVersion" | .terragrunt.version = "$tgVersion" | .tfdocs.version = "$tfdocsVersion" | .infracost.version = "$infracostVersion" | .tfenv.version = "$tfenvVersion"' versions.json > versions.json.tmp
+              '.terraform.version = $tfVersion | .terragrunt.version = $tgVersion | .tfdocs.version = $tfdocsVersion | .infracost.version = $infracostVersion | .tfenv.version = $tfenvVersion' versions.json > versions.json.tmp
           rm -f versions.json
           mv versions.json.tmp versions.json
           if git diff --no-patch --exit-code versions.json; then
