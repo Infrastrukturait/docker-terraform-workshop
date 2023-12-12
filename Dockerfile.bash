@@ -1,4 +1,4 @@
-FROM alpine:3.16 as builder
+FROM alpine:3.18 as builder
 
 # Install build dependencies
 RUN set -eux \
@@ -77,7 +77,7 @@ RUN set -eux \
     && infracost --version
 
 
-FROM docker.io/bash:5
+FROM docker.io/bash:5-alpine3.18
 LABEL MAINTENER="Rafal Masiarek <rafal@masiarek.pl>"
 SHELL ["/usr/local/bin/bash", "-c"]
 RUN set -eux \
