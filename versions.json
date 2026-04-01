@@ -6,10 +6,10 @@
     "version": "0.44.5"
   },
   "tfdocs": {
-    "version": "0.20.0"
+    "version": "0.21.0"
   },
   "infracost": {
-    "version": "0.10.41"
+    "version": "0.10.43"
   },
   "tfenv": {
     "version": "3.0.0"
